@@ -77,6 +77,28 @@ dkms status
 
 [OpenClaw](https://openclaw.ai) is an AI agent gateway. This machine runs it as a local server with Telegram as the messaging channel.
 
+### Running as a Systemd Service
+
+OpenClaw has a built-in command to install itself as a systemd user service (auto-starts on login):
+
+```bash
+openclaw daemon install
+openclaw daemon start
+```
+
+Manage the service:
+
+```bash
+openclaw daemon start      # start
+openclaw daemon stop       # stop
+openclaw daemon restart    # restart
+openclaw daemon status     # check status + probe gateway
+```
+
+Service file is installed at `~/.config/systemd/user/openclaw-gateway.service`.
+
+---
+
 ### Telegram Channel Configuration
 
 After setting up OpenClaw and configuring a Telegram bot, apply this fix **before starting the gateway** to avoid network issues on Rocky Linux 10.1.
