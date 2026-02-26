@@ -73,6 +73,24 @@ dkms status
 
 ---
 
+## Known Issues & Fixes
+
+### OpenClaw — Telegram channel failing with ETIMEDOUT on startup
+
+**Symptom:** Telegram channel repeatedly fails with `Network request failed` errors despite valid credentials and working internet.
+
+**Cause:** Node.js 22 uses "Happy Eyeballs" (`autoSelectFamily=true`) — tries IPv4 and IPv6 simultaneously. Rocky Linux 10.1 has IPv6 link-local addresses but no global IPv6 routing, so both attempts time out together.
+
+**Fix:**
+```bash
+openclaw config set channels.telegram.network.autoSelectFamily false
+openclaw gateway --force
+```
+
+See [issue #1](https://github.com/dfpalhano/rocky-linux-setup/issues/1) for full diagnosis.
+
+---
+
 ## Contributing
 
 If you have additional packages or tips for Rocky Linux 10.1 server setups, feel free to open an issue or PR.
