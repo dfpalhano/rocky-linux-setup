@@ -73,6 +73,31 @@ dkms status
 
 ---
 
+## Step 3 — LibreOffice (Word, Excel, PowerPoint)
+
+LibreOffice is **not available in dnf repos** for Rocky Linux 10.1 (not in AppStream or EPEL). Install via Flatpak instead:
+
+```bash
+sudo flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+sudo flatpak install flathub org.libreoffice.LibreOffice
+```
+
+| Package | Version | Source |
+|---------|---------|--------|
+| LibreOffice | 26.2.0.3 | Flathub (Flatpak) |
+
+### Headless usage (server)
+
+```bash
+# Convert Word to text
+flatpak run org.libreoffice.LibreOffice --headless --convert-to txt file.docx
+
+# Convert Excel to CSV
+flatpak run org.libreoffice.LibreOffice --headless --convert-to csv file.xlsx
+```
+
+---
+
 ## OpenClaw — AI Gateway Setup
 
 [OpenClaw](https://openclaw.ai) is an AI agent gateway. This machine runs it as a local server with Telegram as the messaging channel.
