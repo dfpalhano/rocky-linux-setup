@@ -73,18 +73,33 @@ dkms status
 
 ---
 
-## Known Issues & Fixes
+## OpenClaw — AI Gateway Setup
 
-### OpenClaw — Telegram channel failing with ETIMEDOUT on startup
+[OpenClaw](https://openclaw.ai) is an AI agent gateway. This machine runs it as a local server with Telegram as the messaging channel.
 
-**Symptom:** Telegram channel repeatedly fails with `Network request failed` errors despite valid credentials and working internet.
+### Telegram Channel Configuration
 
-**Cause:** Node.js 22 uses "Happy Eyeballs" (`autoSelectFamily=true`) — tries IPv4 and IPv6 simultaneously. Rocky Linux 10.1 has IPv6 link-local addresses but no global IPv6 routing, so both attempts time out together.
+After setting up OpenClaw and configuring a Telegram bot, apply this fix **before starting the gateway** to avoid network issues on Rocky Linux 10.1.
+
+**Problem:** On Rocky Linux 10.1 with Node.js 22, the Telegram channel fails on startup with repeated errors:
+
+```
+telegram deleteWebhook failed: Network request for 'deleteWebhook' failed!
+telegram setMyCommands failed: Network request for 'setMyCommands' failed!
+```
+
+**Cause:** Node.js 22 enables "Happy Eyeballs" (`autoSelectFamily=true`) — it tries IPv4 and IPv6 simultaneously. Rocky Linux 10.1 typically has IPv6 link-local addresses but no global IPv6 routing, so both attempts time out together (`AggregateError [ETIMEDOUT]`).
 
 **Fix:**
+
 ```bash
 openclaw config set channels.telegram.network.autoSelectFamily false
 openclaw gateway --force
+```
+
+The gateway log will confirm it's applied:
+```
+autoSelectFamily=false (config)
 ```
 
 See [issue #1](https://github.com/dfpalhano/rocky-linux-setup/issues/1) for full diagnosis.
