@@ -97,6 +97,13 @@ openclaw daemon status     # check status + probe gateway
 
 Service file is installed at `~/.config/systemd/user/openclaw-gateway.service`.
 
+> **Note:** If you need the gateway to start at boot without login, enable systemd user lingering:
+> ```bash
+> sudo loginctl enable-linger $USER
+> ```
+
+See [issue #2](https://github.com/dfpalhano/rocky-linux-setup/issues/2) for full setup notes.
+
 ---
 
 ### Telegram Channel Configuration
