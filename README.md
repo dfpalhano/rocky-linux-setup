@@ -160,6 +160,108 @@ See [issue #1](https://github.com/dfpalhano/rocky-linux-setup/issues/1) for full
 
 ---
 
+## Step 4 — Linuxbrew (Homebrew on Linux)
+
+A second package manager covering many CLIs that aren't packaged for Rocky 10.1
+or where the dnf version lags. Used as the source-of-truth for `op`, `gh`,
+`rclone`, `semgrep`, and friends below.
+
+```bash
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"' >> ~/.bashrc
+eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+```
+
+| Package | Version | Source |
+|---------|---------|--------|
+| Homebrew | 5.1.8 | install.sh |
+
+> **Heads-up — Node ABI split:** if you `brew install node`, the brew Node will
+> shadow `/usr/bin/node`. Native modules built against one will fail on the
+> other (`NODE_MODULE_VERSION` mismatch). Pin scripts that load native modules
+> to the Node they were compiled against, e.g. `PATH=/usr/bin:$PATH node …`.
+
+---
+
+## Step 5 — Daily-driver CLIs (via Linuxbrew)
+
+```bash
+brew install gh op rclone semgrep
+```
+
+| Package | Version | Source | Purpose |
+|---------|---------|--------|---------|
+| GitHub CLI (`gh`) | 2.87.3 | Linuxbrew | `gh` for repo / PR / issue / API ops |
+| 1Password CLI (`op`) | 2.32.1 | Linuxbrew | Secrets manager; `eval $(op signin)` to start a session |
+| rclone | 1.73.5 | Linuxbrew | Cloud sync; encrypted backups via `gcrypt` remotes |
+| Semgrep | 1.157.0 | Linuxbrew | Static analysis (security + lint patterns) |
+
+### gh first-time login
+
+```bash
+gh auth login            # follow prompts (HTTPS, browser, scope)
+gh auth status           # confirm
+```
+
+### op first-time setup
+
+```bash
+op account add --address my.1password.com --email <you>@<host>
+eval $(op signin)        # session lasts ~30 minutes by default
+op item list             # smoke
+```
+
+### rclone gcrypt backup
+
+```bash
+rclone config            # add a Google Drive remote, then a "crypt" overlay on it
+rclone sync ~/backup-source crypted-remote:bak/<host>
+```
+
+---
+
+## Step 6 — Tailscale (mesh VPN / SSH)
+
+Tailscale is published from its own repo; do not rely on EPEL.
+
+```bash
+sudo dnf config-manager --add-repo https://pkgs.tailscale.com/stable/rhel/10/tailscale.repo
+sudo dnf install -y tailscale
+sudo systemctl enable --now tailscaled
+sudo tailscale up        # opens a browser auth URL
+tailscale status
+```
+
+| Package | Version | Source |
+|---------|---------|--------|
+| tailscale | 1.96.4 | Tailscale RPM repo |
+
+Once up, every machine on your tailnet is reachable by hostname or
+`100.x.y.z` IP. Use it for SSH between machines without exposing port 22 to
+the public internet.
+
+---
+
+## Step 7 — Obsidian (knowledge vault)
+
+Same Flatpak strategy as LibreOffice — not in dnf repos.
+
+```bash
+sudo flatpak install -y flathub md.obsidian.Obsidian
+flatpak run md.obsidian.Obsidian
+```
+
+| Package | Version | Source |
+|---------|---------|--------|
+| Obsidian | 1.12.7 | Flathub (Flatpak) |
+
+For multi-machine vault sync use Syncthing over Tailscale; folder paths are
+case-sensitive on Linux but not on macOS — pick one canonical case before
+syncing or you'll end up with duplicate-but-different folders on the Linux
+side.
+
+---
+
 ## Contributing
 
 If you have additional packages or tips for Rocky Linux 10.1 server setups, feel free to open an issue or PR.
