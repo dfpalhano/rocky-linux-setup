@@ -262,6 +262,65 @@ side.
 
 ---
 
+## Step 8 — Claude Code Remote Control (drive this server from anywhere)
+
+This box is an AI server, so the useful pattern is to run [Claude Code](https://claude.com/claude-code)
+**here** and steer it from a laptop browser or phone. **Remote Control** does
+exactly that: Claude Code keeps running locally — full filesystem, MCP servers,
+and project config stay on this machine — while [claude.ai/code](https://claude.ai/code)
+or the Claude mobile app act as a remote window into the session. Nothing moves
+to the cloud.
+
+> **Why not SSH + cloud agents?** Claude Code on the web runs in Anthropic's
+> cloud and can't reach this machine — its Tailscale `*.ts.net` name only
+> resolves *on* the tailnet. Remote Control flips it: this machine dials out to
+> Anthropic over HTTPS (no inbound ports), so you don't expose anything.
+
+**Requirements:** Claude Code v2.1.51+ (`claude --version`), a Pro/Max plan, and
+a claude.ai login (`claude` → `/login`). Not supported on API keys, Bedrock,
+Vertex, Foundry, or a custom `ANTHROPIC_BASE_URL`.
+
+### One-command launcher
+
+[`claude-remote.sh`](./claude-remote.sh) in this repo wraps the setup: it unsets
+any `ANTHROPIC_API_KEY` / `ANTHROPIC_BASE_URL` for the process (both disable
+Remote Control), checks the CLI is present, `cd`s into the project, and starts
+server mode with a session name.
+
+```bash
+./claude-remote.sh                      # current dir, name "<hostname>-server"
+./claude-remote.sh ~/code/myproject     # a specific project
+./claude-remote.sh ~/code/myproject "My Project"
+```
+
+Or run it directly:
+
+```bash
+cd ~/code/myproject
+claude remote-control                   # prints a session URL; spacebar for a QR code
+```
+
+### Connect from another device
+
+- Open the printed **session URL** in any browser, or
+- **Scan the QR code** with the Claude app ([iOS](https://apps.apple.com/us/app/claude-by-anthropic/id6473753684) / [Android](https://play.google.com/store/apps/details?id=com.anthropic.claude)), or
+- Open **claude.ai/code** (or the app's **Code** tab) and pick the session — it shows a computer icon with a green dot when online.
+
+The conversation stays in sync across terminal, browser, and phone, so you can
+hand off between them mid-task.
+
+> **Keep it alive:** Remote Control is a local process. If this server stays on
+> but loses network for ~10 min, or the `claude` process exits, the session
+> ends — just re-run the launcher. To make every interactive session reachable
+> automatically, run `/config` and set **Enable Remote Control for all sessions**
+> to `true`.
+
+Tip: pair this with the [Tailscale](#step-6--tailscale-mesh-vpn--ssh) setup
+above — `ssh <host>` onto the tailnet from your laptop, run `./claude-remote.sh`,
+then close the laptop and keep steering from your phone.
+
+---
+
 ## Contributing
 
 If you have additional packages or tips for Rocky Linux 10.1 server setups, feel free to open an issue or PR.
