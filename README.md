@@ -320,7 +320,33 @@ this machine, only a URL + token.
    `https://mcp.zapier.com/api/mcp/s/<token>/mcp`; the token *is* the
    credential, so treat it like a password.
 
-#### Wire it into Claude Code (this machine)
+> **Connect ≠ Share.** The **Share** button gives a
+> `https://mcp.zapier.com/share/...` link, which only lets someone else
+> duplicate your *tool configuration* — it is not an endpoint and no client
+> will connect to it. Only the `/api/mcp/s/.../mcp` URL from the **Connect**
+> tab works. (Corollary: a share link is not a secret; the Connect URL is.)
+
+#### Wire it into Claude Code — plugin route (easiest)
+
+The official plugin authenticates over OAuth, so there is **no URL or token to
+copy** — skip the Connect tab entirely. Inside an interactive `claude` session:
+
+```
+/plugin marketplace add anthropics/claude-plugins-official
+/plugin install zapier@claude-plugins-official
+```
+
+> `/plugin` is a slash command in the Claude Code CLI. It does not exist in
+> Claude Code on the web — run it in a terminal on this machine.
+
+If a manual `zapier` server was registered earlier, remove it first so the two
+don't collide:
+
+```bash
+claude mcp remove --scope user zapier
+```
+
+#### Wire it into Claude Code — manual route (URL + token)
 
 Use the helper script — it validates the URL, stashes it in 1Password, and
 registers the server at user scope (available in every project, not just the
@@ -342,10 +368,6 @@ claude mcp list          # confirm it registered
 
 Then inside Claude Code run `/mcp` to check the connection and list the tools.
 An empty tool list means the server has no actions attached yet.
-
-> There is also an official **`zapier` plugin** in the Claude Code plugin
-> marketplace, which does the same wiring without touching a URL — worth
-> checking before doing it manually.
 
 #### Wire it into claude.ai / Claude Desktop
 
