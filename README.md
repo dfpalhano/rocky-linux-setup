@@ -262,14 +262,54 @@ side.
 
 ---
 
-## Step 8 — Zapier MCP (Claude ↔ 8,000+ apps)
+## Step 8 — Zapier + Claude
+
+Two **different, independent** integrations that are easy to confuse. Pick by
+which side initiates the call:
+
+| Direction | What it is | Credential | Use when |
+|-----------|------------|------------|----------|
+| **Claude → Zapier** | Zapier MCP: your Zapier actions become tools Claude can call | MCP server URL | You want Claude to *do* things in your apps, in conversation |
+| **Zapier → Claude** | Zapier's "Anthropic (Claude)" app: a Zap step that prompts Claude | Anthropic API key | You want an unattended Zap to classify/summarise/draft |
+
+Setting up one does **not** enable the other, and they bill separately.
+
+---
+
+### 8a. Zapier → Claude (API key)
+
+Zapier's *Anthropic (Claude)* app runs Claude as a step inside a Zap.
+
+1. <https://platform.claude.com/settings/keys> (formerly console.anthropic.com)
+   → **Create Key** → copy it. The secret is shown once only.
+2. In Zapier: **Apps** → **+ Add connection** → *Anthropic (Claude)* → paste the
+   key into the **API Key** field.
+
+> **Billing gotcha:** the Anthropic API is prepaid and entirely separate from a
+> Claude Pro/Max subscription — the subscription does **not** cover API calls.
+> Load credits (min $5) under Billing in the console or every Zap run fails on
+> auth/quota. Credits expire one year after purchase.
+
+Store the key in 1Password rather than only in Zapier, so rotation is possible:
+
+```bash
+op item create --category="API Credential" --title="Anthropic API (Zapier)" credential="sk-ant-..."
+```
+
+To rotate: create a new key in the console, update the Zapier connection, then
+delete the old key. Zaps using the old connection break the moment it's deleted,
+so update first.
+
+---
+
+### 8b. Claude → Zapier (MCP)
 
 [Zapier MCP](https://mcp.zapier.com) exposes your Zapier actions as MCP tools, so
 Claude can send Gmail, file Jira tickets, append Sheets rows, etc. without you
 writing an integration. It is a **remote** MCP server — nothing is installed on
 this machine, only a URL + token.
 
-### 1. Create the server (browser, one time)
+#### Create the server (browser, one time)
 
 1. Go to <https://mcp.zapier.com> and sign in.
 2. **+ New MCP Server** → pick the client (**Claude** for claude.ai/Desktop,
@@ -280,7 +320,7 @@ this machine, only a URL + token.
    `https://mcp.zapier.com/api/mcp/s/<token>/mcp`; the token *is* the
    credential, so treat it like a password.
 
-### 2a. Wire it into Claude Code (this machine)
+#### Wire it into Claude Code (this machine)
 
 ```bash
 # --scope user = available in every project on this box (default is per-project)
@@ -291,7 +331,7 @@ claude mcp list          # confirm it registered
 
 Then inside Claude Code run `/mcp` to check the connection and list the tools.
 
-### 2b. Wire it into claude.ai / Claude Desktop
+#### Wire it into claude.ai / Claude Desktop
 
 Settings → **Connectors** → **Add custom connector** → paste the same URL.
 Zapier is also in the connector directory, which does the same thing over OAuth
