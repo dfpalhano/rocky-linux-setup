@@ -322,14 +322,30 @@ this machine, only a URL + token.
 
 #### Wire it into Claude Code (this machine)
 
-```bash
-# --scope user = available in every project on this box (default is per-project)
-claude mcp add --transport http --scope user zapier "<YOUR_GENERATED_URL>"
+Use the helper script — it validates the URL, stashes it in 1Password, and
+registers the server at user scope (available in every project, not just the
+current directory):
 
+```bash
+./scripts/setup-zapier-mcp.sh 'https://mcp.zapier.com/api/mcp/s/<token>/mcp'
+
+./scripts/setup-zapier-mcp.sh    # later runs: re-reads the URL from 1Password
+```
+
+It's idempotent — re-running replaces the existing registration, so it's also
+the rotation path. Equivalent by hand:
+
+```bash
+claude mcp add --transport http --scope user zapier "<YOUR_GENERATED_URL>"
 claude mcp list          # confirm it registered
 ```
 
 Then inside Claude Code run `/mcp` to check the connection and list the tools.
+An empty tool list means the server has no actions attached yet.
+
+> There is also an official **`zapier` plugin** in the Claude Code plugin
+> marketplace, which does the same wiring without touching a URL — worth
+> checking before doing it manually.
 
 #### Wire it into claude.ai / Claude Desktop
 
