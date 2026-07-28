@@ -262,6 +262,66 @@ side.
 
 ---
 
+## Step 8 — Zapier MCP (Claude ↔ 8,000+ apps)
+
+[Zapier MCP](https://mcp.zapier.com) exposes your Zapier actions as MCP tools, so
+Claude can send Gmail, file Jira tickets, append Sheets rows, etc. without you
+writing an integration. It is a **remote** MCP server — nothing is installed on
+this machine, only a URL + token.
+
+### 1. Create the server (browser, one time)
+
+1. Go to <https://mcp.zapier.com> and sign in.
+2. **+ New MCP Server** → pick the client (**Claude** for claude.ai/Desktop,
+   **Claude Code** for the CLI) → name it.
+3. Add the actions you want exposed (e.g. *Gmail: Send Email*). **Only the
+   actions you add become tools** — an empty server gives Claude nothing.
+4. **Connect** tab → copy the generated URL. It looks like
+   `https://mcp.zapier.com/api/mcp/s/<token>/mcp`; the token *is* the
+   credential, so treat it like a password.
+
+### 2a. Wire it into Claude Code (this machine)
+
+```bash
+# --scope user = available in every project on this box (default is per-project)
+claude mcp add --transport http --scope user zapier "<YOUR_GENERATED_URL>"
+
+claude mcp list          # confirm it registered
+```
+
+Then inside Claude Code run `/mcp` to check the connection and list the tools.
+
+### 2b. Wire it into claude.ai / Claude Desktop
+
+Settings → **Connectors** → **Add custom connector** → paste the same URL.
+Zapier is also in the connector directory, which does the same thing over OAuth
+instead of a URL token.
+
+| Detail | Value |
+|--------|-------|
+| Transport | Streamable HTTP (legacy SSE is no longer supported) |
+| Auth | Bearer token embedded in the server URL |
+| Install footprint | None — remote server, no local daemon |
+
+### Notes
+
+- **Store the URL in 1Password**, not in `~/.claude.json` in a synced/backed-up
+  folder — `op` is already installed above:
+  ```bash
+  op item create --category="API Credential" --title="Zapier MCP" credential="<URL>"
+  claude mcp add --transport http --scope user zapier "$(op read 'op://Private/Zapier MCP/credential')"
+  ```
+- Each action you expose is a live write to a real account. Keep the action list
+  minimal and re-read Claude's tool-call arguments before approving the first
+  run of anything that sends or deletes.
+- Rotating: delete and recreate the server in the Zapier dashboard, then
+  `claude mcp remove zapier` and re-add with the new URL.
+- Headless/systemd contexts (like the OpenClaw gateway above) don't share the
+  Claude Code MCP config — configure that separately if you want the same tools
+  there.
+
+---
+
 ## Contributing
 
 If you have additional packages or tips for Rocky Linux 10.1 server setups, feel free to open an issue or PR.
